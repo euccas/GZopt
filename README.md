@@ -1,2 +1,2 @@
-# GZopt
-On GZ optimization
+# z4v
+Optimize zlib compression performance
