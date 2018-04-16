@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to My Great Project's documentation!
+Understanding ZLIB
 ============================================
+
+This document covers technical introduction to the design and implementation of zlib. It's part of the outcome from my study on zlib while working on a project which aims to optimize zlib's performance in the compression part. The purpose of this document is to help those who are interested in zlib to better understand it.
 
 .. toctree::
    :maxdepth: 2
