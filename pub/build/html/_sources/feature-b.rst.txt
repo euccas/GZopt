@@ -1,4 +1,4 @@
-Feature B
+How zlib works
 =========
 
 Level 1

@@ -1,4 +1,4 @@
-Feature C
+Implementation Details
 =========
 
 Level 2
