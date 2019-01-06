@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>3.3. Finding Longest Match on Understanding zlib</title>
+    <link>./3-implement/finding_longest_match/</link>
+    <description>Recent content in 3.3. Finding Longest Match on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:52:57 +0700</lastBuildDate>
+    
+	<atom:link href="./3-implement/finding_longest_match/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>3.3.1. Match Length Limit</title>
+      <link>./3-implement/finding_longest_match/match_length_limit/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/match_length_limit/</guid>
+      <description>zlib defines a MIN_MATCH and a MAX_MATCH as the minimum and maximum match lengths it searches for.
+1#define MIN_MATCH 3 2#define MAX_MATCH 258 The MIN_MATCH is set to 3. The reason of having a minimum match length equals to 3 is obvious: the matches shorter than 3 will not help reduce the encoded data size, because the encoded data symbols will have the same or longer length.
+This value of MIN_MATCH cannot be changed unless you change related code, such as calling UPDATE_HASH function for how many times.</description>
+    </item>
+    
+    <item>
+      <title>3.3.2. Rabin-Karp Algorithm</title>
+      <link>./3-implement/finding_longest_match/rabin_karp_algorithm/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/rabin_karp_algorithm/</guid>
+      <description>Rabin-Karp algorithm is a string-searching algorithm created by Richard M. Karp and Michael O. Rabin. It uses hashing to find any one of a set of pattern strings in a text. For example, given a text &amp;ldquo;AABAACAADAABAABA&amp;rdquo;, and a pattern &amp;ldquo;AABA&amp;rdquo;, we can use Rabin-Karp algorithm to find pattern exists in the text at index 0, 9, 12.
+Following pseudo code describes how Rabin-Karp algorithm works.
+1# p is a pattern, its length is m 2# t is text, its length is n 3# the algorithm searches for pattern p in text t 4 5Compute hash_p (for pattern p) 6Compute hash_t (for the first substring of t with m length) 7for i = 0 to n - m: 8 if hash_p == hash_t: 9 Match t[i .</description>
+    </item>
+    
+    <item>
+      <title>3.3.3. Hash Chain</title>
+      <link>./3-implement/finding_longest_match/hash_chain/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/hash_chain/</guid>
+      <description>As explained earlier, Rabin-Karp algorithm checks the hash value of substrings in order to find matches in text. To find matches in the search buffer which stores recent data symbols, zlib uses a hash chain organization to keep records of the hash values of every 3 (or other values defined by MIN_MATCH) bytes.
+This hash chain in zlib is implemented by using two arrays: prev[] and head[]. Both arrays stores the positions in the sliding window.</description>
+    </item>
+    
+    <item>
+      <title>3.3.4. Adaptive Search Limit</title>
+      <link>./3-implement/finding_longest_match/adaptive_search_limit/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/adaptive_search_limit/</guid>
+      <description>When searching for the longest match in the hash chain, zlib limits the chain length it searches to improve searching efficiency. The search limit is set by:
+ The predefined max_chain_length value. This value is different for different compression levels. In the searching process, if a match has been found and its length is not less than a predefined good_match length, the search length will be shortened as new_search_chain_length = search_chain_length / 4  The search limit values are defined in a configuration table:</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>2.2. LZ77 on Understanding zlib</title>
+    <link>./2-algorithm/lz77/</link>
+    <description>Recent content in 2.2. LZ77 on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:55:57 +0700</lastBuildDate>
+    
+	<atom:link href="./2-algorithm/lz77/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>2.2.1. Sliding Window</title>
+      <link>./2-algorithm/lz77/sliding_window/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/lz77/sliding_window/</guid>
+      <description>The sliding window is used to examine the input data sequence, and to maintain the historical data that serve as the dictionary. In other words, the dictionary is a portion of the previously appeared and encoded data.
+The sliding window consists of two parts: a search buffer, and a look-ahead buffer. The search buffer contains the dictionary - the recent encoded data, and the look-ahead buffer contains the next portion of input data sequence to be encoded.</description>
+    </item>
+    
+    <item>
+      <title>2.2.2. Length-Distance pair</title>
+      <link>./2-algorithm/lz77/length_distance_pair/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/lz77/length_distance_pair/</guid>
+      <description>The length-distance pair indicates that each of the next length characters is the same as the character exactly distance characters behind it in the original data stream.
+In LZ77 algorithm, the compressor searches back through the search buffer until it finds a match to the first character in the look-ahead buffer. There could be more than one matches exist in the search buffer, and the compressor will find the one match having the longest length.</description>
+    </item>
+    
+  </channel>
+</rss>

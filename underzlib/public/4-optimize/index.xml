@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>4. Optimizing zlib on Understanding zlib</title>
+    <link>./4-optimize/</link>
+    <description>Recent content in 4. Optimizing zlib on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:52:57 +0700</lastBuildDate>
+    
+	<atom:link href="./4-optimize/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>4.1. Intel: zlib-new</title>
+      <link>./4-optimize/intel_zlib_new/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/intel_zlib_new/</guid>
+      <description>Reference: Intel: High Performance ZLIB compression on Intel Architecture Processors (pdf)
+Optimizations focus on improved hashing, the search for the longest prefix match of substrings in LZ77 process, and the Huffman code flow.
+Improved hashing: For compression levels 1 through 5, hash elements as quadruplets (match at least 4 bytes). For compression levels 6 to 9, use zlib&amp;rsquo;s original hashing elements as triplets (match at least 3 bytes).
+Add two additional strategies: DEFLATE_quick for level 1, DEFLATE_medium for level 4 to 6.</description>
+    </item>
+    
+    <item>
+      <title>4.2. IBM: fast deflate</title>
+      <link>./4-optimize/ibm_zlib/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/ibm_zlib/</guid>
+      <description>Reference: IBM: A fast implementation of Deflate
+Optimizations focus on improving the speed of zlib deflate process by using LZ4&amp;rsquo;s repetition elimination process, and improved Huffman coding process.
+Replace LZ77 with LZ4 for faster repetition elimination: Observed speed-up is moderate, didn&amp;rsquo;t achieve LZ4&amp;rsquo;s performance probably due to differences in cache usage. Also observed compression ratio is hardly affected.
+Force the use of static Huffman tree: Reached fast speed but could have negative effect on compression ratio.</description>
+    </item>
+    
+    <item>
+      <title>4.3. Facebook: Zstandard</title>
+      <link>./4-optimize/facebook_zstd/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/facebook_zstd/</guid>
+      <description>Reference: Facebook Zstandard (zstd) design introduction
+Zstandard on GitHub
+Zstandard is designed to scale with modern hardware and compress smaller and faster, for general-purpose compression for a variety of data types.
+Improve upon zlib by combining several recent innovations and targeting modern hardware.
+Increase window size to 1MB - 8MB (recommendation).
+In compression, use Finite State Entropy based on ANS (Asymmetric Numeral System) to improve performance and reduce latency.
+Use repcode modeling to efficiently compress structured data</description>
+    </item>
+    
+    <item>
+      <title>4.4. Google: Zopfli, Brotli</title>
+      <link>./4-optimize/google_zopfli/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/google_zopfli/</guid>
+      <description>Reference: Data compression using Zopfli (pdf), Comparison of Brotli, Deflate, Zopfli, LZMA, LZHAM and Bzip2 Compression Algorithms (pdf)
+Zopfli on GitHub
+Brotli on GitHub
+In 2013 Google launched Zopfli, which is compatible with deflate format. Zopfli gives smaller compressed data size than gzip (3.7-8.3% smaller), but it has slower compression speed than gzip level 9. Zopfli library can only compress, not decompress.
+Brotli attempts to implement a new compression format, and a more efficient algorithm than deflate.</description>
+    </item>
+    
+    <item>
+      <title>4.5. Apple: LZFSE</title>
+      <link>./4-optimize/apple_lzfse/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/apple_lzfse/</guid>
+      <description>Reference: Apple Data Compression: LZFSE
+LZFSE is designed for iOS and macOS, to achieve much higher energy efficiency and speed (between 2x and 3x).
+LZFSE algorithm uses LZ77 and Finite State Entropy encoding.</description>
+    </item>
+    
+    <item>
+      <title>4.6. CloudFlare: zlib</title>
+      <link>./4-optimize/cloudflare_zlib/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/cloudflare_zlib/</guid>
+      <description>Reference: CloudFlare fights cancer: The Unexpected Benefit Of Open Sourcing Our Code
+CloudFlare zlib fork on GitHub
+CloudFlare&amp;rsquo;s improvements on zlib include:
+ Use uint64_t to replace the 16-bit types. Use an improved hash function iSCSI CRC32. This function is implemented as a hardware instruction on Intel processors. It has very fast performance and better collision properties. Search for matches of at least 4 bytes. Use SIMD instructions for window rolling.</description>
+    </item>
+    
+    <item>
+      <title>4.7. CloudFlare: preset dictionary</title>
+      <link>./4-optimize/cloudflare_preset/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/cloudflare_preset/</guid>
+      <description>Reference: CloudFlare: improve compression with preset deflate dictionary
+Optimizations aim to improve compression performance (~25% down) for HTML files (mostly short texts).
+Change minimal match length to 4 bytes.
+Use a preset dictionary so at the beginning of the input has back reference for searching matches.
+ Create the preset dictionary by performing pseudo LZ77 over a set of files to be compressed, and find strings that DEFLATE would not compress in the first 16Kb of each input file.</description>
+    </item>
+    
+  </channel>
+</rss>

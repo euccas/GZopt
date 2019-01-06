@@ -1,5 +1,0 @@
-Implementation Details
-=========
-
-Level 2
----------

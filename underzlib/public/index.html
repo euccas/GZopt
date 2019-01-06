@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <meta name="generator" content="Hugo 0.53" />
+
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Understanding zlib</title>
+
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  
+  <link href="./index.xml" rel="alternate" type="application/rss+xml" title="Understanding zlib" />
+
+</head>
+<body>
+
+<div class="sidebar sidebar-default">
+    <div class="navigation">
+        <div>
+    <img src="./logo_sidebar.png" style="width:240px">
+</div>
+
+        <h1 class="site-title"><a href="./">Understanding zlib</a></h1>
+
+
+        <nav class="internal">
+            <ul>
+    
+        
+            
+    <li>
+        <a href="#introduction">1. Introduction</a>
+        <ul>
+            
+            
+                <li><a href="#what_is_zlib">1.1. What is zlib</a></li>
+            
+        </ul>
+    </li>
+
+
+
+        
+            
+    <li>
+        <a href="#compression_algorithm">2. Compression Algorithm</a>
+        <ul>
+            
+                
+                    
+    <li>
+        <a href="#deflate">2.1. Deflate</a>
+    </li>
+
+
+
+                
+                    
+    <li>
+        <a href="#deflate_lz77">2.2. LZ77</a>
+        <ul>
+            
+            
+                <li><a href="#deflate_sliding_window">2.2.1. Sliding Window</a></li>
+            
+                <li><a href="#deflate_length_distance_pair">2.2.2. Length-Distance pair</a></li>
+            
+        </ul>
+    </li>
+
+
+
+                
+            
+            
+                <li><a href="#deflate_huffman">2.3. Huffman Encoding</a></li>
+            
+        </ul>
+    </li>
+
+
+
+        
+            
+    <li>
+        <a href="#zlib_implementation">3. Implementation of zlib</a>
+        <ul>
+            
+                
+                    
+    <li>
+        <a href="#zlib_compression_levels">3.1. Compression Levels</a>
+    </li>
+
+
+
+                
+                    
+    <li>
+        <a href="#zlib_sliding_window">3.2. Sliding Window</a>
+    </li>
+
+
+
+                
+                    
+    <li>
+        <a href="#zlib_longest_match">3.3. Finding Longest Match</a>
+        <ul>
+            
+            
+                <li><a href="#zlib_match_length">3.3.1. Match Length Limit</a></li>
+            
+                <li><a href="#zlib_rabin_karp">3.3.2. Rabin-Karp Algorithm</a></li>
+            
+                <li><a href="#zlib_hash_chain">3.3.3. Hash Chain</a></li>
+            
+                <li><a href="#zlib_adaptive_search_limit">3.3.4. Adaptive Search Limit</a></li>
+            
+        </ul>
+    </li>
+
+
+
+                
+                    
+    <li>
+        <a href="#zlib_huffman_encoding">3.4. Huffman Encoding</a>
+    </li>
+
+
+
+                
+                    
+    <li>
+        <a href="#zlib_io_buffer">3.5. I/O Buffer</a>
+        <ul>
+            
+            
+                <li><a href="#zlib_input_buffer">3.5.1. Input Buffer</a></li>
+            
+                <li><a href="#zlib_literal_buffer">3.5.2. Literal Buffer</a></li>
+            
+                <li><a href="#zlib_output_buffer">3.5.3. Output Buffer</a></li>
+            
+        </ul>
+    </li>
+
+
+
+                
+            
+            
+                <li><a href="#zlib_misc">3.6. Misc.</a></li>
+            
+        </ul>
+    </li>
+
+
+
+        
+            
+    <li>
+        <a href="#zlib_optimize">4. Optimizing zlib</a>
+        <ul>
+            
+            
+                <li><a href="#zlib_optimize_intel">4.1. Intel: zlib-new</a></li>
+            
+                <li><a href="#zlib_optimize_ibm">4.2. IBM: fast deflate</a></li>
+            
+                <li><a href="#zlib_optimize_facebook">4.3. Facebook: Zstandard</a></li>
+            
+                <li><a href="#zlib_optimize_google">4.4. Google: Zopfli, Brotli</a></li>
+            
+                <li><a href="#zlib_optimize_apple">4.5. Apple: LZFSE</a></li>
+            
+                <li><a href="#zlib_optimize_cloudflare">4.6. CloudFlare: zlib</a></li>
+            
+                <li><a href="#zlib_optimize_cloudflare_dict">4.7. CloudFlare: preset dictionary</a></li>
+            
+        </ul>
+    </li>
+
+
+
+        
+            
+    <li>
+        <a href="#reference">Reference</a>
+    </li>
+
+
+
+        
+            
+    <li>
+        <a href="#about">About</a>
+    </li>
+
+
+
+        
+    
+</ul>
+
+        </nav>
+
+        <nav class="external">
+            <div class="external-title"></div>
+            
+            <ul id="shortcuts">
+                
+                <li>
+                    <a href="https://euccas.me" target="_blank" rel="noopener">Made By Euccas</a>
+                </li>
+                
+            </ul>
+            
+        </nav>
+    </div>
+
+    <div class="version">
+            generated on Jan 5, 2019
+    </div>
+</div>
+
+<div class="content">
+    
+        
+            
+    <section class="page" id="introduction">
+    <h1>
+        <a href="#introduction">1. Introduction</a>
+    </h1>
+    <div class="content">
+        <p><intro>In 2017, I had the chance to work on a project that aims to improve the performance of data compression. During the process, I studied the zlib library and the deflate compression algorithm it implements. Here I would like to share my studies to those who also want to have a better understanding of zlib.</intro></p>
+
+<p><author><a href="https://www.euccas.me">Euccas</a></author>
+<date>Jan, 2019</date></p>
+
+    </div>
+</section>
+
+    
+            
+                <section class="page" id="what_is_zlib">
+    <h1>
+        <a href="#what_is_zlib">1.1. What is zlib</a>
+    </h1>
+    <div class="content">
+        <p><a href="https://zlib.net/">zlib</a> is a free, open source software library for <bold>lossless data compression</bold> and <bold>decompression</bold>.
+It was written by <a href="https://en.wikipedia.org/wiki/Jean-loup_Gailly">Jean-loup Gailly</a> (compression) and <a href="https://en.wikipedia.org/wiki/Mark_Adler">Mark Adler</a> (decompression), in C language. The first version of zlib was released in May 1995. Jean-loup Gailly and Mark Adler also wrote the code for <bold>gzip</bold> (GNU zip). Under the hood, gzip uses zlib library.</p>
+
+<p>To date, zlib is mainly maintained by Mark Adler, and its recent updates and version releases can all be found on <a href="https://github.com/madler/zlib">GitHub</a>. Mark Adler is also active on <a href="https://stackoverflow.com/questions/tagged/zlib">Stack Overflow</a> to answer technical questions about zlib and gzip.</p>
+
+<p>More than many software applications and libraries utilizes zlib. If paying attention, you can find zlib almost everywhere, in operation systems, internet services, streaming services, document editors, and more. This is <a href="http://zlib.net/apps.html">an incomplete list</a> of those applications.</p>
+
+<p>The specification of zlib achieved official Internet RFC (<a href="https://en.wikipedia.org/wiki/Request_for_Comments">Request for Comments</a>) status in May 1996.</p>
+
+<ul>
+<li><a href="https://www.ietf.org/rfc/rfc1950.txt">RFC 1950</a>: zlib compressed data format</li>
+<li><a href="https://www.ietf.org/rfc/rfc1951.txt">RFC 1951</a>: deflate compressed data format</li>
+<li><a href="https://www.ietf.org/rfc/rfc1952.txt">RFC 1952</a>: gzip file format</li>
+</ul>
+
+    </div>
+</section>
+
+            
+
+
+
+        
+            
+    <section class="page" id="compression_algorithm">
+    <h1>
+        <a href="#compression_algorithm">2. Compression Algorithm</a>
+    </h1>
+    <div class="content">
+        <p>The <bold>compression</bold> algorithm used in zlib is the <bold>deflate</bold> method. The deflate method encodes the input data into compressed data. The <bold>decompression</bold> algorithm used in zlib is the <bold>inflate</bold> method, which is the decoding process that takes a deflate bit stream for decompression and correctly produces the original full-size data or file.</p>
+
+<p>In this document, I will focus on the compression part of zlib, as well as zlib’s implementation of the <bold>deflate algorithm</bold>.</p>
+
+<div class="block note">
+    <p>I will use the words <bold>“data bytes”</bold>, <bold>&ldquo;bytes of data&rdquo;</bold>, <bold>“data symbols”</bold>, <bold>&ldquo;data stream&rdquo;</bold>, <bold>&ldquo;bit stream&rdquo;</bold> to indicate the data to be compressed. In the following part these words have the same meaning and are interchangeable.</p>
+
+</div>
+
+
+    </div>
+</section>
+
+    
+        
+            
+    <section class="page" id="deflate">
+    <h1>
+        <a href="#deflate">2.1. Deflate</a>
+    </h1>
+    <div class="content">
+        <p>Deflate method was originally defined by <a href="https://en.wikipedia.org/wiki/Phil_Katz">Phil Katz</a> in <a href="http://www.pkware.com/">PKWARE</a>&rsquo;s archiving tool PKZIP 2.x. It is a combination of the <bold>LZ77 algorithm</bold> and <bold>Huffman encoding</bold>.</p>
+
+<p>The following figure illustrates the deflate and inflate process from a high level.</p>
+
+<p><img src="./deflate_process.png" alt="Deflate Process" /></p>
+
+    </div>
+</section>
+
+
+
+
+        
+            
+    <section class="page" id="deflate_lz77">
+    <h1>
+        <a href="#deflate_lz77">2.2. LZ77</a>
+    </h1>
+    <div class="content">
+        <p>LZ77 is a dictionary based lossless compression algorithm. It is also known as LZ1.</p>
+
+<p>The basic idea of dictionary based algorithms is to replace an occurrence of a particular sequence of bytes in data with a reference to a previous occurrence of that sequence.</p>
+
+<p>There are two main types of dictionary based compression algorithms: LZ77 and LZ78. These two algorithms are named after the two creators <a href="https://de.wikipedia.org/wiki/Jacob_Ziv">Jakob Ziv</a> and <a href="https://en.wikipedia.org/wiki/Abraham_Lempel">Abraham Lempel</a>. LZ77 (Lempel-Ziv77) and LZ78 (Lempel-Ziv78) were published in papers in 1977 and 1978, respectively.</p>
+
+<p>LZ77 compression algorithm works by using a <bold>sliding window</bold> to find sequences of data that are repeated, and encoding each repeated sequence by a pair of numbers called a <bold>length-distance pair</bold>.</p>
+
+    </div>
+</section>
+
+    
+            
+                <section class="page" id="deflate_sliding_window">
+    <h1>
+        <a href="#deflate_sliding_window">2.2.1. Sliding Window</a>
+    </h1>
+    <div class="content">
+        <p>The sliding window is used to examine the input data sequence, and to maintain the historical data that serve as the dictionary. In other words, the dictionary is a portion of the previously appeared and encoded data.</p>
+
+<p>The sliding window consists of two parts: a <bold>search buffer</bold>, and a <bold>look-ahead buffer</bold>. The search buffer contains the dictionary - the recent encoded data, and the look-ahead buffer contains the next portion of input data sequence to be encoded. The following figure gives an example of a sliding window.</p>
+
+<p><img src="./sliding_window.png" alt="Sliding Window" /></p>
+
+<p>The <bold>size of the sliding window</bold> is one of the key factors that affect compression performance. If the sliding window is too small, the compressor might find less repeated data sequences, as a result the compressed file size will be larger. If the sliding window is too large, the compressor might need spend longer time to find repeated data sequences, consequently the compression speed will be slower.</p>
+
+<p>In practice, typically the size of the sliding window can be from several KB to MB, such as 4 KB, 32 KB, 1 MB, or 4 MB.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="deflate_length_distance_pair">
+    <h1>
+        <a href="#deflate_length_distance_pair">2.2.2. Length-Distance pair</a>
+    </h1>
+    <div class="content">
+        <p>The length-distance pair indicates that each of the next <bold>length</bold> characters is the same as the character exactly <bold>distance</bold> characters behind it in the original data stream.</p>
+
+<p>In LZ77 algorithm, the compressor searches back through the search buffer until it finds a match to the first character in the look-ahead buffer. There could be more than one matches exist in the search buffer, and the compressor will find the one match having the longest length. When the <bold>longest match</bold> is found, the compressor encodes it with a triple <bold>(D, L, C)</bold> where:</p>
+
+<ul>
+<li>D = distance of the search cursor from the start of look-ahead buffer</li>
+<li>L = length of longest match</li>
+<li>C = next character in look-ahead buffer beyond longest match</li>
+</ul>
+
+<p>The reason of adding the third element <em>C</em> in the triple is for handling the case where no match is found in the search buffer. In that case, the values of both <em>D</em> and <em>L</em> are 0, and <em>C</em> is the first character in current look-ahead buffer.</p>
+
+<p>The following figure shows an example of how LZ77 finds a longest match and encodes the repeated characters for a given string <code>&ldquo;axrrmaxrbaxssr&rdquo;</code>.</p>
+
+<p><img src="./length_distance_pair.png" alt="Length Distance Pair" /></p>
+
+<p>In practice, a compressor can optimize the encoding output according to its own implementation, and choose output formats other than the <bold>(D, L, C)</bold> triplet.</p>
+
+    </div>
+</section>
+
+            
+
+
+
+        
+    
+            
+                <section class="page" id="deflate_huffman">
+    <h1>
+        <a href="#deflate_huffman">2.3. Huffman Encoding</a>
+    </h1>
+    <div class="content">
+        <p>Huffman encoding is a statistical compression method. It encodes data symbols (such as characters) with variable-length codes, and lengths of the codes are based on the frequencies of corresponding symbols.</p>
+
+<p>Huffman encoding, as well as other variable-length coding methods, has two properties:</p>
+
+<ol>
+<li>Codes for <bold>more frequently occurring</bold> data symbols are <bold>shorter</bold> than codes for less frequently occurring data symbols.</li>
+<li>Each code can be <bold>uniquely decoded</bold>. This requires the codes to be <bold>prefix codes</bold>, meaning any code for one symbol is not a prefix of codes for other symbols. For example, if code <code>“0”</code> is used for symbol <code>“A”</code>, then code <code>“01”</code> cannot be used for symbol <code>“B”</code> as code <code>“0”</code> is a prefix of code <code>“01”</code>. The prefix property guarantees when decoding there is no ambiguity in determining where the symbol boundaries are.</li>
+</ol>
+
+<p>Huffman encoding has two steps:</p>
+
+<ol>
+<li>Build a Huffman tree from original data symbols. A Huffman tree is a binary tree structure.</li>
+<li>Traverse the Huffman Tree and assign codes to data symbols.</li>
+</ol>
+
+<p>Huffman codes can be <bold>fixed (static)</bold> or <bold>dynamic</bold>. Both are used in deflate method.</p>
+
+<p>Fixed Huffman codes can be created by examining a large number of data sets, and finding typical code lengths. When using fixed Huffman coding, the same codes are used for all the input data symbols.</p>
+
+<p>Dynamic Huffman codes are generated by breaking input data into blocks, and generating codes for each data block.</p>
+
+    </div>
+</section>
+
+            
+
+
+
+        
+            
+    <section class="page" id="zlib_implementation">
+    <h1>
+        <a href="#zlib_implementation">3. Implementation of zlib</a>
+    </h1>
+    <div class="content">
+        <p>The implementation of zlib is pragmatic and efficient. Over the past 20 years, people have made many attempts to improve the performance of compression applications, but it seems that we only achieve better performance by using algorithms other than deflate (and inflate), adopting parallel processing, or improving CPU level instructions. So zlib, as it states in its GitHub repository, is quite <bold>a massively spiffy yet delicately unobtrusive compression library</bold>.</p>
+
+<p>In the following sections, we will look at some of the detailed techniques that zlib uses to implement the deflate compression algorithm.</p>
+
+    </div>
+</section>
+
+    
+        
+            
+    <section class="page" id="zlib_compression_levels">
+    <h1>
+        <a href="#zlib_compression_levels">3.1. Compression Levels</a>
+    </h1>
+    <div class="content">
+        <p>zlib has 10 compression levels (0-9). Different levels have different compression performance in terms of <bold>compression ratio</bold> and <bold>speed</bold>. Level 0 means no compression, zlib will output the original data. Level 1 is the fastest, while it has low compression ratio. Level 9 gives the highest compression ratio, but the compression speed is slower. The default compression level zlib uses is 6.</p>
+
+<p>Under the hood, compression level changes the deflate strategy and parameters in the deflate process. More details will be discussed in the following sections.</p>
+
+    </div>
+</section>
+
+
+
+
+        
+            
+    <section class="page" id="zlib_sliding_window">
+    <h1>
+        <a href="#zlib_sliding_window">3.2. Sliding Window</a>
+    </h1>
+    <div class="content">
+        <p>In zlib, the default size of sliding window is 64KB. The sliding window is divided into two parts, corresponding to the <bold>search buffer</bold> and <bold>look-ahead buffer</bold>, and each part is 32KB. Input bytes are read into the second half of the window, and move to the first half later to keep a dictionary of at least 32KB. This organization ensures that IO is always performed with a length multiple of the block size (8KB). Also, the 64KB limit is quite useful on older platform MSDOS.</p>
+
+<p>The following code snippet shows how the sliding window is initialized. The macro <code>MAX_WBITS</code> determines the size of the sliding window. It’s configurable and the default value is 15, which leads to a 32KB search buffer and a 64KB sliding window.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#111">define</span> <span style="color:#111">MAX_WBITS</span>   <span style="color:#ae81ff">15</span> <span style="color:#75715e">/* 32K LZ77 window */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">3</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_bits</span> <span style="color:#f92672">=</span> <span style="color:#111">windowBits</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">4</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_size</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_bits</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">5</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_mask</span> <span style="color:#f92672">=</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_size</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">6</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">7</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">window</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">Bytef</span> <span style="color:#f92672">*</span><span style="color:#111">)</span> <span style="color:#111">ZALLOC</span><span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_size</span><span style="color:#111">,</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">*</span><span style="color:#00a8c8">sizeof</span><span style="color:#111">(</span><span style="color:#111">Byte</span><span style="color:#111">));</span></code></pre></div>
+
+<p>Data are copied into sliding window when look-ahead buffer becomes insufficient. This process is implemented inside function <code>fill_window</code>.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#111">local</span> <span style="color:#00a8c8">void</span> <span style="color:#75af00">fill_window</span><span style="color:#111">(</span><span style="color:#111">s</span><span style="color:#111">)</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span>    <span style="color:#111">deflate_state</span> <span style="color:#f92672">*</span><span style="color:#111">s</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">3</span><span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">4</span>    <span style="color:#111">...</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">5</span><span style="color:#111">}</span></code></pre></div>
+
+    </div>
+</section>
+
+
+
+
+        
+            
+    <section class="page" id="zlib_longest_match">
+    <h1>
+        <a href="#zlib_longest_match">3.3. Finding Longest Match</a>
+    </h1>
+    <div class="content">
+        <p>The technique zlib uses to find the longest match in the search buffer is straightforward, and it turns out to be the fastest for most input files: use a string matching algorithm to find possible matches, then try all possible matches and select the longest.</p>
+
+<p>The matching algorithm for small strings is inspired from <bold>Rabin-Karp algorithm</bold>. The key feature of this algorithm is that insertions into the string dictionary are very simple and thus fast, and deletions are avoided completely. Insertions are performed at each input character, whereas string matches are performed only when the previous match ends. So it is preferable to spend more time in matches to allow very fast string insertions and avoid deletions. A brute force approach is used to find longer strings when a small match has been found.</p>
+
+<p>So in summary, the process of finding the longest match has two major parts:</p>
+
+<ol>
+<li>In the sliding window, for each data symbol in the look-ahead buffer, use a Rabin-Karp algorithm based method to find <bold>a possible match</bold> in the search buffer, and record the match start position. There can be multiple possible matches available.</li>
+<li>For each possible match, starting from the match start position, check each following data symbol to find the <bold>current longest match</bold>. Search in all the possible matches found in step 1, until finding <bold>the longest match</bold>, or finding a match whose length exceeds the pre-defined <bold>longest match limit</bold>.</li>
+</ol>
+
+    </div>
+</section>
+
+    
+            
+                <section class="page" id="zlib_match_length">
+    <h1>
+        <a href="#zlib_match_length">3.3.1. Match Length Limit</a>
+    </h1>
+    <div class="content">
+        <p>zlib defines a <code>MIN_MATCH</code> and a <code>MAX_MATCH</code> as the <bold>minimum</bold> and <bold>maximum</bold> match lengths it searches for.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#75715e">#define MIN_MATCH  3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span><span style="color:#75715e">#define MAX_MATCH  258</span></code></pre></div>
+
+<p>The <code>MIN_MATCH</code> is set to 3. The reason of having a minimum match length equals to 3 is obvious: the matches shorter than 3 will not help reduce the encoded data size, because the encoded data symbols will have the same or longer length.</p>
+
+<p>This value of <code>MIN_MATCH</code> cannot be changed unless you change related code, such as calling <code>UPDATE_HASH</code> function for how many times.</p>
+
+<p>The <code>MAX_MATCH</code> is set to 258. This number comes from the fact that one length-distance pair, which is the output of the LZ77 encoded data symbols, can represent at most 258 bytes. A length requires at least one bit and a distance requires at least one bit, so two bits in can give 258 bytes out.</p>
+
+<p>The value of <code>MAX_MATCH</code> in zlib can be changed, but the change might affect compression performance. Also in zlib there is some logic controlled by condition <code>MAX_MATCH == 258</code>. Those codes, when enabled, could improve compression performance when using a modern compiler.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#75715e">#if (defined(UNALIGNED_OK) &amp;&amp; MAX_MATCH == 258)
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span><span style="color:#75715e"></span>        <span style="color:#75715e">/* This code assumes sizeof(unsigned short) == 2. Do not use
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">3</span><span style="color:#75715e">         * UNALIGNED_OK if your compiler uses a different size.
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">4</span><span style="color:#75715e">         */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">5</span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#111">ushf</span><span style="color:#f92672">*</span><span style="color:#111">)(</span><span style="color:#111">match</span><span style="color:#f92672">+</span><span style="color:#111">best_len</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span> <span style="color:#f92672">!=</span> <span style="color:#111">scan_end</span> <span style="color:#f92672">||</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">6</span>            <span style="color:#f92672">*</span><span style="color:#111">(</span><span style="color:#111">ushf</span><span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">match</span> <span style="color:#f92672">!=</span> <span style="color:#111">scan_start</span><span style="color:#111">)</span> <span style="color:#00a8c8">continue</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">7</span>        <span style="color:#111">...</span></code></pre></div>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_rabin_karp">
+    <h1>
+        <a href="#zlib_rabin_karp">3.3.2. Rabin-Karp Algorithm</a>
+    </h1>
+    <div class="content">
+        <p>Rabin-Karp algorithm is a string-searching algorithm created by <a href="https://en.wikipedia.org/wiki/Richard_M._Karp">Richard M. Karp</a> and <a href="https://en.wikipedia.org/wiki/Michael_O._Rabin">Michael O. Rabin</a>. It uses hashing to find any one of a set of pattern strings in a text. For example, given a text <code>&ldquo;AABAACAADAABAABA&rdquo;</code>, and a pattern <code>&ldquo;AABA&rdquo;</code>, we can use Rabin-Karp algorithm to find pattern exists in the text at index <code>0</code>, <code>9</code>, <code>12</code>.</p>
+
+<p>Following pseudo code describes how Rabin-Karp algorithm works.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 1</span><span style="color:#75715e"># p is a pattern, its length is m</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 2</span><span style="color:#75715e"># t is text, its length is n</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 3</span><span style="color:#75715e"># the algorithm searches for pattern p in text t</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 4</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 5</span><span style="color:#111">Compute</span> <span style="color:#111">hash_p</span> <span style="color:#111">(</span><span style="color:#00a8c8">for</span> <span style="color:#111">pattern</span> <span style="color:#111">p</span><span style="color:#111">)</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 6</span><span style="color:#111">Compute</span> <span style="color:#111">hash_t</span> <span style="color:#111">(</span><span style="color:#00a8c8">for</span> <span style="color:#111">the</span> <span style="color:#111">first</span> <span style="color:#111">substring</span> <span style="color:#111">of</span> <span style="color:#111">t</span> <span style="color:#00a8c8">with</span> <span style="color:#111">m</span> <span style="color:#111">length</span><span style="color:#111">)</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 7</span><span style="color:#00a8c8">for</span> <span style="color:#111">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> <span style="color:#111">to</span> <span style="color:#111">n</span> <span style="color:#f92672">-</span> <span style="color:#111">m</span><span style="color:#111">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 8</span>    <span style="color:#00a8c8">if</span> <span style="color:#111">hash_p</span> <span style="color:#f92672">==</span> <span style="color:#111">hash_t</span><span style="color:#111">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 9</span>        <span style="color:#111">Match</span> <span style="color:#111">t</span><span style="color:#111">[</span><span style="color:#111">i</span> <span style="color:#f92672">.</span> <span style="color:#f92672">.</span> <span style="color:#f92672">.</span> <span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#111">m</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">]</span> <span style="color:#00a8c8">with</span> <span style="color:#111">p</span><span style="color:#111">,</span> <span style="color:#00a8c8">if</span> <span style="color:#111">matched</span> <span style="color:#00a8c8">return</span> <span style="color:#ae81ff">1</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">10</span>    <span style="color:#00a8c8">else</span><span style="color:#111">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">11</span>        <span style="color:#111">Update</span> <span style="color:#111">hash_t</span> <span style="color:#00a8c8">for</span> <span style="color:#111">t</span><span style="color:#111">[</span><span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">.</span> <span style="color:#f92672">.</span> <span style="color:#f92672">.</span> <span style="color:#111">i</span><span style="color:#f92672">+</span><span style="color:#111">m</span><span style="color:#111">]</span> <span style="color:#111">using</span> <span style="color:#111">rolling</span> <span style="color:#111">hash</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">12</span><span style="color:#111">End</span></code></pre></div>
+
+<p>The <bold>average</bold> and <bold>best case running time</bold> of the Rabin-Karp algorithm is <em>O(n+m)</em>, where n is the length of text, and m is the length of pattern. But its <bold>worst-case</bold> time is <em>O(nm)</em>. Worst case of Rabin-Karp algorithm occurs when all characters of pattern and text are same as the hash values of all the substrings of text match with hash value of pattern. For example <code>text = &ldquo;AAAAAAA&rdquo;</code> and <code>pattern = &ldquo;AAA&rdquo;</code>.</p>
+
+<p>The key to the Rabin-Karp algorithm&rsquo;s performance is the efficient computation of hash values of the successive substrings of the text, by using the <bold>rolling hash</bold> technique. The benefit of <a href="https://en.wikipedia.org/wiki/Rolling_hash">rolling hash</a> is it computes the hash value of the next substring from the previous one by doing only a constant number of operations, rather than having to rehash the complete substring.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_hash_chain">
+    <h1>
+        <a href="#zlib_hash_chain">3.3.3. Hash Chain</a>
+    </h1>
+    <div class="content">
+        <p>As explained earlier, Rabin-Karp algorithm checks the hash value of substrings in order to find matches in text. To find matches in the search buffer which stores recent data symbols, zlib uses a <bold>hash chain organization</bold> to keep records of the hash values of every 3 (or other values defined by <code>MIN_MATCH</code>) bytes.</p>
+
+<p>This hash chain in zlib is implemented by using two arrays: <code>prev[]</code> and <code>head[]</code>. Both arrays stores the positions in the sliding window. The <code>head[]</code> array stores the heads of the hash chains, the <code>prev[]</code> array stores and links the positions of strings with the same hash index. The following figure shows an example of how the hash chain works.</p>
+
+<p><img src="./hash_chain.png" alt="Hash Chain" /></p>
+
+<div class="block note">
+    <p>In this example, the <code>HashValue</code> function and its results are just examples, and they are not accurate.</p>
+
+</div>
+
+
+<p>The size of <code>prev[]</code> is limited to half of the sliding window. Because the link that <code>prev[]</code> maintains is only for the data in the search buffer, and that’s only last 32K strings by default. An index in <code>prev[]</code> array is a window index modulo 32K.</p>
+
+<p>Following code snippets show how zlib implements the hash chain organization. The hash size changes with parameter <code>memLevel</code>, which is configured for each compression level.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 1</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_bits</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">uInt</span><span style="color:#111">)</span><span style="color:#111">memLevel</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">7</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 2</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_size</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_bits</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 3</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 4</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">prev</span>   <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">Posf</span> <span style="color:#f92672">*</span><span style="color:#111">)</span>  <span style="color:#111">ZALLOC</span><span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_size</span><span style="color:#111">,</span> <span style="color:#00a8c8">sizeof</span><span style="color:#111">(</span><span style="color:#111">Pos</span><span style="color:#111">));</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 5</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span>   <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">Posf</span> <span style="color:#f92672">*</span><span style="color:#111">)</span>  <span style="color:#111">ZALLOC</span><span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_size</span><span style="color:#111">,</span> <span style="color:#00a8c8">sizeof</span><span style="color:#111">(</span><span style="color:#111">Pos</span><span style="color:#111">));</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 6</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 7</span><span style="color:#75715e">#define UPDATE_HASH(s,h,c) (h = (((h)&lt;&lt;s-&gt;hash_shift) ^ (c)) &amp; s-&gt;hash_mask)
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 8</span><span style="color:#75715e"></span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 9</span><span style="color:#75715e">#define INSERT_STRING(s, str, match_head) \
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">10</span><span style="color:#75715e"></span>   <span style="color:#111">(</span><span style="color:#111">UPDATE_HASH</span><span style="color:#111">(</span><span style="color:#111">s</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">ins_h</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">window</span><span style="color:#111">[(</span><span style="color:#111">str</span><span style="color:#111">)</span> <span style="color:#f92672">+</span> <span style="color:#111">(</span><span style="color:#111">MIN_MATCH</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">)]),</span> \
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">11</span>    <span style="color:#111">match_head</span> <span style="color:#f92672">=</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">prev</span><span style="color:#111">[(</span><span style="color:#111">str</span><span style="color:#111">)</span> <span style="color:#f92672">&amp;</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">w_mask</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span><span style="color:#111">[</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">ins_h</span><span style="color:#111">],</span> \
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">12</span>    <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span><span style="color:#111">[</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">ins_h</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#111">Pos</span><span style="color:#111">)(</span><span style="color:#111">str</span><span style="color:#111">))</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">13</span><span style="color:#75715e">#endif
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">14</span><span style="color:#75715e"></span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">15</span><span style="color:#75715e">#define CLEAR_HASH(s) \
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">16</span><span style="color:#75715e"></span>    <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span><span style="color:#111">[</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_size</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">NIL</span><span style="color:#111">;</span> \
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">17</span>    <span style="color:#111">zmemzero</span><span style="color:#111">((</span><span style="color:#111">Bytef</span> <span style="color:#f92672">*</span><span style="color:#111">)</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span><span style="color:#111">,</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span><span style="color:#111">)(</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">hash_size</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">)</span><span style="color:#f92672">*</span><span style="color:#00a8c8">sizeof</span><span style="color:#111">(</span><span style="color:#f92672">*</span><span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">head</span><span style="color:#111">));</span></code></pre></div>
+
+<div class="block note">
+    <p>In <code>CLEAR_HASH</code>, array<code>head[]</code> is cleared. Array <code>prev[]</code> is cleared on the fly, not here.</p>
+
+</div>
+
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_adaptive_search_limit">
+    <h1>
+        <a href="#zlib_adaptive_search_limit">3.3.4. Adaptive Search Limit</a>
+    </h1>
+    <div class="content">
+        <p>When searching for the longest match in the hash chain, zlib limits the <bold>chain length</bold> it searches to improve searching efficiency. The search limit is set by:</p>
+
+<ol>
+<li>The predefined <code>max_chain_length</code> value. This value is different for different compression levels.</li>
+<li>In the searching process, if a match has been found and its length is not less than a predefined <code>good_match</code> length, the search length will be shortened as <code>new_search_chain_length = search_chain_length / 4</code></li>
+</ol>
+
+<p>The search limit values are defined in a <bold>configuration table</bold>:</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 1</span><span style="color:#111">local</span> <span style="color:#00a8c8">const</span> <span style="color:#111">config</span> <span style="color:#111">configuration_table</span><span style="color:#111">[</span><span style="color:#ae81ff">10</span><span style="color:#111">]</span> <span style="color:#f92672">=</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 2</span><span style="color:#75715e">/*      good lazy nice max_chain_length */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 3</span><span style="color:#75715e">/* 0 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">0</span><span style="color:#111">,</span>    <span style="color:#ae81ff">0</span><span style="color:#111">,</span>  <span style="color:#ae81ff">0</span><span style="color:#111">,</span>    <span style="color:#ae81ff">0</span><span style="color:#111">,</span> <span style="color:#111">deflate_stored</span><span style="color:#111">},</span>  <span style="color:#75715e">/* store only */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 4</span><span style="color:#75715e">/* 1 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">4</span><span style="color:#111">,</span>    <span style="color:#ae81ff">4</span><span style="color:#111">,</span>  <span style="color:#ae81ff">8</span><span style="color:#111">,</span>    <span style="color:#ae81ff">4</span><span style="color:#111">,</span> <span style="color:#111">deflate_fast</span><span style="color:#111">},</span> <span style="color:#75715e">/* max speed, no lazy matches */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 5</span><span style="color:#75715e">/* 2 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">4</span><span style="color:#111">,</span>    <span style="color:#ae81ff">5</span><span style="color:#111">,</span> <span style="color:#ae81ff">16</span><span style="color:#111">,</span>    <span style="color:#ae81ff">8</span><span style="color:#111">,</span> <span style="color:#111">deflate_fast</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 6</span><span style="color:#75715e">/* 3 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">4</span><span style="color:#111">,</span>    <span style="color:#ae81ff">6</span><span style="color:#111">,</span> <span style="color:#ae81ff">32</span><span style="color:#111">,</span>   <span style="color:#ae81ff">32</span><span style="color:#111">,</span> <span style="color:#111">deflate_fast</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 7</span><span style="color:#75715e">/* 4 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">4</span><span style="color:#111">,</span>    <span style="color:#ae81ff">4</span><span style="color:#111">,</span> <span style="color:#ae81ff">16</span><span style="color:#111">,</span>   <span style="color:#ae81ff">16</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">},</span>  <span style="color:#75715e">/* lazy matches */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 8</span><span style="color:#75715e">/* 5 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">8</span><span style="color:#111">,</span>   <span style="color:#ae81ff">16</span><span style="color:#111">,</span> <span style="color:#ae81ff">32</span><span style="color:#111">,</span>   <span style="color:#ae81ff">32</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 9</span><span style="color:#75715e">/* 6 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">8</span><span style="color:#111">,</span>   <span style="color:#ae81ff">16</span><span style="color:#111">,</span> <span style="color:#ae81ff">128</span><span style="color:#111">,</span> <span style="color:#ae81ff">128</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">10</span><span style="color:#75715e">/* 7 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">8</span><span style="color:#111">,</span>   <span style="color:#ae81ff">32</span><span style="color:#111">,</span> <span style="color:#ae81ff">128</span><span style="color:#111">,</span> <span style="color:#ae81ff">256</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">11</span><span style="color:#75715e">/* 8 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">32</span><span style="color:#111">,</span> <span style="color:#ae81ff">128</span><span style="color:#111">,</span> <span style="color:#ae81ff">258</span><span style="color:#111">,</span> <span style="color:#ae81ff">1024</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">},</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">12</span><span style="color:#75715e">/* 9 */</span> <span style="color:#111">{</span><span style="color:#ae81ff">32</span><span style="color:#111">,</span> <span style="color:#ae81ff">258</span><span style="color:#111">,</span> <span style="color:#ae81ff">258</span><span style="color:#111">,</span> <span style="color:#ae81ff">4096</span><span style="color:#111">,</span> <span style="color:#111">deflate_slow</span><span style="color:#111">}};</span> <span style="color:#75715e">/* max compression */</span></code></pre></div>
+
+<div class="block note">
+    <p>In above code snippet:</p>
+
+<ul>
+<li><code>0</code> - <code>9</code> are compression levels.</li>
+<li><code>good</code>, <code>lazy</code>, <code>nice</code> are the values of the length of a good match, a lazy match and a nice match.</li>
+<li><code>max_chain_length</code> is the max chain length zlib searches.</li>
+</ul>
+
+</div>
+
+
+    </div>
+</section>
+
+            
+
+
+
+        
+            
+    <section class="page" id="zlib_huffman_encoding">
+    <h1>
+        <a href="#zlib_huffman_encoding">3.4. Huffman Encoding</a>
+    </h1>
+    <div class="content">
+        <p>zib implements both <bold>static (fixed) Huffman encoding</bold> and <bold>dynamic Huffman encoding</bold>. For each block of LZ77 encoded data, zlib computes the number of bits in the block using both static Huffman encoding and dynamic Huffman encoding, then <bold>choose the method</bold> which produces <bold>smaller amount</bold> of data. If the number of bits are equal using two methods, zlib chooses static Huffman encoding as the decoding process is faster.</p>
+
+<p>The whole data stream can contain a mix of static and dynamic Huffman encoded data. The Huffman codes are transmitted in the deflate stream header for each block.</p>
+
+<p>In summary, the Huffman encoding process in zlib consists of the following steps:</p>
+
+<ol>
+<li>During LZ77 encoding process, collect <bold>statistics of data bytes</bold> and generate a histogram.</li>
+<li>For each data block, build a <bold>dynamic Huffman tree</bold> using the collected statistics.</li>
+<li>Compute and compare the encoded block lengths using a dynamic Huffman tree and a static Huffman tree, and decide whether it is worthwhile to use <bold>a dynamic or a static tree</bold> for the encoding phase.</li>
+<li>Perform dynamic or static Huffman encoding on the block of data.</li>
+</ol>
+
+    </div>
+</section>
+
+
+
+
+        
+            
+    <section class="page" id="zlib_io_buffer">
+    <h1>
+        <a href="#zlib_io_buffer">3.5. I/O Buffer</a>
+    </h1>
+    <div class="content">
+        <p>One important notion in the deflate compression is <bold>data blocks</bold>. The deflate compressed data format is composed of blocks, which have a header that depends on the block data. Therefore the output of deflate comes a block at a time, with nothing written (except a zlib or gzip header) until the first block is completed. Considering how the data blocks transmit in the deflate process, zlib implements several <bold>buffers</bold> to store data blocks and control I/O performance.</p>
+
+    </div>
+</section>
+
+    
+            
+                <section class="page" id="zlib_input_buffer">
+    <h1>
+        <a href="#zlib_input_buffer">3.5.1. Input Buffer</a>
+    </h1>
+    <div class="content">
+        <p>Before starting compression, zlib <bold>accumulates data</bold> in an <bold>input buffer</bold> and starts compression when the input buffer is full. Default input buffer size is 8KB.</p>
+
+<p>The reason of having the input buffer is that zlib won’t generate any output data until 16K data symbols have been generated in the <bold>literal buffer</bold> (default size of the literal buffer is 16K, see the <a href="#zlib_literal_buffer">next section</a> for details about the literal buffer). Therefore starting compression with very short length of data has no benefit. Using the input buffer improves the efficiency of I/O.</p>
+
+<p>The default input buffer size can be changed using <code>gzbuffer</code> function.</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#111">gzbuffer</span><span style="color:#111">(</span><span style="color:#111">file</span><span style="color:#111">,</span> <span style="color:#111">size</span><span style="color:#111">)</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span><span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">3</span>    <span style="color:#111">...</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">4</span>    <span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">want</span> <span style="color:#f92672">=</span> <span style="color:#111">size</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">5</span>    <span style="color:#111">...</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">6</span><span style="color:#111">}</span></code></pre></div>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_literal_buffer">
+    <h1>
+        <a href="#zlib_literal_buffer">3.5.2. Literal Buffer</a>
+    </h1>
+    <div class="content">
+        <p>The <bold>literal buffer</bold> stores data symbols encoded by LZ77. A symbol is either a single byte, coded as a literal, or a length-distance pair, which codes a copy of up to 258 bytes somewhere in the preceding 32K of uncompressed data. Default literal buffer size is 16K, so it can accumulate from 16K to as much as 4MB of uncompressed data (for highly compressible data).</p>
+
+<p>Once the <bold>literal buffer is full</bold>, zlib decides what kind of block to construct for Huffman encoding, and then does so, creating the header, which for a dynamic block describes the Huffman codes in the block, and then creates the coded symbols for that block. Or it creates a stored or static block, whatever results in the fewest number of bits. Only then is that compressed data available for output.</p>
+
+<p>Default literal buffer size is configured by marco <code>DEF_MEM_LEVEL</code>. In zlib&rsquo;s code, <code>DEF_MEM_LEVEL = 8</code>, and it&rsquo;s the same for all compression levels. So all compression levels have the same 16K literal buffer size.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_output_buffer">
+    <h1>
+        <a href="#zlib_output_buffer">3.5.3. Output Buffer</a>
+    </h1>
+    <div class="content">
+        <p>For outputting the compressed data, zlib uses two buffers: a <bold>pending buffer</bold>, and an <bold>output buffer</bold>. The data flow is as shown in the following figure:</p>
+
+<p><img src="./output_buffer.png" alt="Output Buffer" /></p>
+
+<p>Upon initialization, zlib creates a pending buffer (default size is 36K), and an output buffer (default size is 8K). The output data are first <bold>accumulated in pending buffer</bold>, and then get <bold>copied to output buffer</bold>, finally be written to the output compressed zip or gz files.</p>
+
+<p>Data are copied from pending buffer to output buffer in function <code>flush_pending</code>. This function is called when the literal buffer is full, which means a block of data has been processed. It’s also called in some other cases when flushing a block is needed. The length of data copied to the output buffer is limited by the available space in output buffer.</p>
+
+<p>When the <bold>output buffer is full</bold>, or when <bold>flush signal</bold> is issued, zlib writes output buffer to zip or gz files.</p>
+
+<p>zlib uses counters <code>pending_out</code> and <code>avail_out</code> to record how many bytes are available in pending buffer and output buffer. Counter value <code>0</code> means the buffer is full.</p>
+
+<p>Related code snippets:</p>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">1</span><span style="color:#111">flush_pending</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">2</span>    <span style="color:#111">len</span> <span style="color:#f92672">=</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">pending</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">3</span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">len</span> <span style="color:#f92672">&gt;</span> <span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">avail_out</span><span style="color:#111">)</span> <span style="color:#111">len</span> <span style="color:#f92672">=</span> <span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">avail_out</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">4</span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">len</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#00a8c8">return</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">5</span> 
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">6</span>    <span style="color:#111">zmemcpy</span><span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">next_out</span><span style="color:#111">,</span> <span style="color:#111">s</span><span style="color:#f92672">-&gt;</span><span style="color:#111">pending_out</span><span style="color:#111">,</span> <span style="color:#111">len</span><span style="color:#111">);</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">7</span><span style="color:#111">}</span></code></pre></div>
+
+<div class="highlight"><pre style="color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 1</span><span style="color:#111">gzcomp</span><span style="color:#111">()</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 2</span>    <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">avail_out</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#111">(</span><span style="color:#111">flush</span> <span style="color:#f92672">!=</span> <span style="color:#111">Z_NO_FLUSH</span> <span style="color:#f92672">&amp;&amp;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 3</span>            <span style="color:#111">(</span><span style="color:#111">flush</span> <span style="color:#f92672">!=</span> <span style="color:#111">Z_FINISH</span> <span style="color:#f92672">||</span> <span style="color:#111">ret</span> <span style="color:#f92672">==</span> <span style="color:#111">Z_STREAM_END</span><span style="color:#111">)))</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 4</span>        <span style="color:#111">have</span> <span style="color:#f92672">=</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span><span style="color:#111">)(</span><span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">next_out</span> <span style="color:#f92672">-</span> <span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">x</span><span style="color:#111">.</span><span style="color:#111">next</span><span style="color:#111">);</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 5</span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">have</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#111">((</span><span style="color:#111">got</span> <span style="color:#f92672">=</span> <span style="color:#111">write</span><span style="color:#111">(</span><span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">fd</span><span style="color:#111">,</span> <span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">x</span><span style="color:#111">.</span><span style="color:#111">next</span><span style="color:#111">,</span> <span style="color:#111">have</span><span style="color:#111">))</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#111">(</span><span style="color:#00a8c8">unsigned</span><span style="color:#111">)</span><span style="color:#111">got</span> <span style="color:#f92672">!=</span> <span style="color:#111">have</span><span style="color:#111">))</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 6</span>            <span style="color:#111">gz_error</span><span style="color:#111">(</span><span style="color:#111">state</span><span style="color:#111">,</span> <span style="color:#111">Z_ERRNO</span><span style="color:#111">,</span> <span style="color:#111">zstrerror</span><span style="color:#111">());</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 7</span>            <span style="color:#00a8c8">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 8</span>        <span style="color:#111">}</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390"> 9</span>        <span style="color:#00a8c8">if</span> <span style="color:#111">(</span><span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">avail_out</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span><span style="color:#111">)</span> <span style="color:#111">{</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">10</span>            <span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">avail_out</span> <span style="color:#f92672">=</span> <span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">size</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">11</span>            <span style="color:#111">strm</span><span style="color:#f92672">-&gt;</span><span style="color:#111">next_out</span> <span style="color:#f92672">=</span> <span style="color:#111">state</span><span style="color:#f92672">-&gt;</span><span style="color:#111">out</span><span style="color:#111">;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">12</span>       <span style="color:#111">}</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">13</span>    <span style="color:#111">}</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#939390">14</span><span style="color:#111">}</span></code></pre></div>
+
+    </div>
+</section>
+
+            
+
+
+
+        
+    
+            
+                <section class="page" id="zlib_misc">
+    <h1>
+        <a href="#zlib_misc">3.6. Misc.</a>
+    </h1>
+    <div class="content">
+        <div class="block note">
+    <p>This section is empty and waiting for my future updates.</p>
+
+</div>
+
+
+    </div>
+</section>
+
+            
+
+
+
+        
+            
+    <section class="page" id="zlib_optimize">
+    <h1>
+        <a href="#zlib_optimize">4. Optimizing zlib</a>
+    </h1>
+    <div class="content">
+        <p>More than a few companies have been interested in improving compression performance by optimizing the implementation of zlib. Following is a summary of some of the <bold>recent related works</bold>.</p>
+
+    </div>
+</section>
+
+    
+            
+                <section class="page" id="zlib_optimize_intel">
+    <h1>
+        <a href="#zlib_optimize_intel">4.1. Intel: zlib-new</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/zlib-compression-whitepaper-copy.pdf">Intel: High Performance ZLIB compression on Intel Architecture Processors</a> (pdf)</p>
+
+<p>Optimizations focus on improved hashing, the search for the longest prefix match of substrings in LZ77 process, and the Huffman code flow.</p>
+
+<p><bold>Improved hashing</bold>: For compression levels 1 through 5, hash elements as quadruplets (match at least 4 bytes). For compression levels 6 to 9, use zlib&rsquo;s original hashing elements as triplets (match at least 3 bytes).</p>
+
+<p><bold>Add two additional strategies</bold>: DEFLATE_quick for level 1, DEFLATE_medium for level 4 to 6.</p>
+
+<ul>
+<li>DEFLATE_quick: Limit hash chain search to the first entry.</li>
+<li>DEFLATE_medium: Designed to strike a balance between the compression ratio of zlib&rsquo;s <bold>DEFLATE_slow</bold> strategy, and the performance of zlib&rsquo;s <bold>DEFLATE_fast</bold> strategy. It skips forwarding by the match length after a match is found and supports a variant of lazy match evaluation. When a match is found at position <code>p</code> and of length <code>l</code>, checks for a match at position <code>p + l + 1</code>. If a new match is found, scans backwards from position <code>p + l + 1</code>, to determine whether the second match can be improved.</li>
+</ul>
+
+<p><bold>Faster hash table shifting</bold>: Leverage SSE (Intel ©) to operate hash shifting on eight entries (16 bytes) at a time.</p>
+
+<p><bold>Faster CRC calculation</bold>: Leverage PCLMULQDQ (Intel ©) instruction to process 64 bytes of input at a time, with altered algorithm.</p>
+
+<p><bold>Reduce loop unrolling</bold>: Remove the excessive loop unrolling in Adler32 and CRC32 computations on Modern processors. For Adler32, reduce the unrolling factor from 16 to 8. For CRC32, reduce the unrolling factor from 8 to 4.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_ibm">
+    <h1>
+        <a href="#zlib_optimize_ibm">4.2. IBM: fast deflate</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="http://ieeexplore.ieee.org/document/6824430/">IBM: A fast implementation of Deflate</a></p>
+
+<p>Optimizations focus on improving the speed of zlib deflate process by using LZ4&rsquo;s repetition elimination process, and improved Huffman coding process.</p>
+
+<p><bold>Replace LZ77 with LZ4</bold> for faster repetition elimination: Observed speed-up is moderate, didn&rsquo;t achieve LZ4&rsquo;s performance probably due to differences in cache usage. Also observed compression ratio is hardly affected.</p>
+
+<p><bold>Force the use of static Huffman tree</bold>: Reached fast speed but could have negative effect on compression ratio.</p>
+
+<p><bold>Semi-static Huffman encoding</bold>: Use static tree to compress the first block of intermediate data (LZ77&rsquo;s output), and collect statistics of this first block to build a Huffman tree for encoding later blocks. The first block&rsquo;s size is configuration, default is 8KB. The sizes of other blocks are also configurable, default is 128KB. An additional step added is evaluating the statistics of the initial block before building the Huffman tree to determine whether it worths to use a dynamic tree. This approach achieves both faster speed and better compression ratio.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_facebook">
+    <h1>
+        <a href="#zlib_optimize_facebook">4.3. Facebook: Zstandard</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="https://code.facebook.com/posts/1658392934479273/smaller-and-faster-data-compression-with-zstandard/">Facebook Zstandard (zstd) design introduction</a></p>
+
+<p><a href="https://github.com/facebook/zstd">Zstandard on GitHub</a></p>
+
+<p>Zstandard is designed to scale with modern hardware and compress smaller and faster, for general-purpose compression for a variety of data types.</p>
+
+<p>Improve upon zlib by combining several recent innovations and targeting modern hardware.</p>
+
+<p><bold>Increase window size</bold> to 1MB - 8MB (recommendation).</p>
+
+<p>In compression, use <bold>Finite State Entropy</bold> based on ANS (Asymmetric Numeral System) to improve performance and reduce latency.</p>
+
+<p>Use <bold>repcode modeling</bold> to efficiently compress structured data</p>
+
+<p>Use a <bold>branchless design style</bold> to reduce the overhead of CPU branch predictor.</p>
+
+<p>In decompression, separate data into multiple parallel streams and uses a new generation Huffman decoder to <bold>decode multiple symbols in parallel</bold> with a single core. This takes advantage of modern CPU&rsquo;s ability to issue several instructions per cycle.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_google">
+    <h1>
+        <a href="#zlib_optimize_google">4.4. Google: Zopfli, Brotli</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="http://fh7922mg.bget.ru/articles/compression/data-compression-using-zopfli.html">Data compression using Zopfli</a> (pdf), <a href="https://cran.r-project.org/web/packages/brotli/vignettes/brotli-2015-09-22.pdf">Comparison of Brotli, Deflate, Zopfli, LZMA, LZHAM and Bzip2 Compression Algorithms</a> (pdf)</p>
+
+<p><a href="https://github.com/google/zopfli">Zopfli on GitHub</a></p>
+
+<p><a href="https://github.com/google/brotli">Brotli on GitHub</a></p>
+
+<p>In 2013 Google launched <bold>Zopfli</bold>, which is compatible with deflate format. Zopfli gives <bold>smaller compressed data size</bold> than gzip (3.7-8.3% smaller), but it has <bold>slower compression speed</bold> than gzip level 9. Zopfli library can only compress, not decompress.</p>
+
+<p><bold>Brotli</bold> attempts to implement a <bold>new compression format</bold>, and a more efficient algorithm than deflate. It is similar in speed with deflate but offers more dense compression.</p>
+
+<p>The Brotli compression format is defined in <a href="https://tools.ietf.org/html/rfc7932">RFC 7932</a>. The algorithm uses a combination of a modern variant of the LZ77 algorithm, Huffman coding and 2nd order context modeling. It also uses a static dictionary containing more than 13K words. The static dictionary is helpful for compressing short files.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_apple">
+    <h1>
+        <a href="#zlib_optimize_apple">4.5. Apple: LZFSE</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="https://developer.apple.com/documentation/compression/data_compression">Apple Data Compression: LZFSE</a></p>
+
+<p>LZFSE is designed for iOS and macOS, to achieve much higher energy efficiency and speed (between 2x and 3x).</p>
+
+<p>LZFSE algorithm uses <bold>LZ77</bold> and <bold>Finite State Entropy encoding</bold>.</p>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_cloudflare">
+    <h1>
+        <a href="#zlib_optimize_cloudflare">4.6. CloudFlare: zlib</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="https://blog.cloudflare.com/cloudflare-fights-cancer/">CloudFlare fights cancer: The Unexpected Benefit Of Open Sourcing Our Code</a></p>
+
+<p><a href="https://github.com/cloudflare/zlib">CloudFlare zlib fork on GitHub</a></p>
+
+<p>CloudFlare&rsquo;s improvements on zlib include:</p>
+
+<ul>
+<li>Use <bold>uint64_t</bold> to replace the 16-bit types.</li>
+<li>Use an <bold>improved hash function</bold> iSCSI CRC32. This function is implemented as a hardware instruction on Intel processors. It has very fast performance and better collision properties.</li>
+<li>Search for matches of at least <bold>4 bytes</bold>.</li>
+<li>Use SIMD instructions for <bold>window rolling</bold>.</li>
+<li>Use Intel&rsquo;s hardware carry-less multiplication instruction PCLMULQDQ for the <bold>CRC32 checksum</bold>.</li>
+<li><bold>Optimized longest-match function</bold>. This is the most performance demanding function in the library.</li>
+</ul>
+
+<p>Other experiments, not yet included in the released zlib fork:</p>
+
+<ul>
+<li>Use an improved version of the linked list used in zlib (hash chain)</li>
+</ul>
+
+<p>Benchmarking results</p>
+
+<ul>
+<li>Testing datasets are four standard corpus data consists of ASCII text, bitmap images, numbers, and source code files.</li>
+<li>Speed: In general, CloudFlare&rsquo;s zlib is faster than zlib and Intel&rsquo;s zlib on levels 2 to 9, especially 6 to 9 (2x - 7.5x).</li>
+<li>Compression ratio: Very similar to zlib on all levels, and better than Intel&rsquo;s zlib on level 1.</li>
+</ul>
+
+    </div>
+</section>
+
+            
+                <section class="page" id="zlib_optimize_cloudflare_dict">
+    <h1>
+        <a href="#zlib_optimize_cloudflare_dict">4.7. CloudFlare: preset dictionary</a>
+    </h1>
+    <div class="content">
+        <p>Reference: <a href="https://blog.cloudflare.com/improving-compression-with-preset-deflate-dictionary/">CloudFlare: improve compression with preset deflate dictionary</a></p>
+
+<p>Optimizations aim to improve compression performance (~25% down) for HTML files (mostly <bold>short texts</bold>).</p>
+
+<p>Change minimal match length to <bold>4 bytes</bold>.</p>
+
+<p>Use a <bold>preset dictionary</bold> so at the beginning of the input has back reference for searching matches.</p>
+
+<ul>
+<li>Create the preset dictionary by performing pseudo LZ77 over a set of files to be compressed, and find strings that DEFLATE would not compress in the first 16Kb of each input file. Then performs a frequency count of the individual strings, and scores them according to their length and frequency. The highest scoring strings are saved into the dictionary file.</li>
+<li>Use a Go program to make such deflate dictionary: <a href="https://github.com/vkrasnov/dictator">dictator on GitHub</a></li>
+</ul>
+
+    </div>
+</section>
+
+            
+
+
+
+        
+            
+    <section class="page" id="reference">
+    <h1>
+        <a href="#reference">Reference</a>
+    </h1>
+    <div class="content">
+        <ul>
+<li><a href="https://github.com/madler/zlib">zlib Source Code</a></li>
+<li><a href="https://www.zlib.net/zlib_tech.html">zlib Technical Details</a></li>
+<li><a href="https://cs.stanford.edu/people/eroberts/courses/soco/projects/data-compression/overview/index.htm">Data Compression - Stanford Sophomore College Projects</a></li>
+</ul>
+
+    </div>
+</section>
+
+
+
+
+        
+            
+    <section class="page" id="about">
+    <h1>
+        <a href="#about">About</a>
+    </h1>
+    <div class="content">
+        <p>This document is written by <a href="https://www.euccas.me">Euccas Chen</a>. Initial version is published on January 5th, 2019.</p>
+
+<p>The web pages are generated by <a href="https://gohugo.io/">Hugo</a> - an open source static site generator, and themed with <a href="https://github.com/jsnjack/kraiklyn">Kraiklyn</a>.</p>
+
+<p>The web page style and logo design is inspired by <a href="https://www.gitbook.com">GitBook</a>.</p>
+
+    </div>
+</section>
+
+
+
+
+        
+    
+</div>
+</body>
+</html>
+

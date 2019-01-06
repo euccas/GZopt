@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>./1-intro/</loc>
+    <lastmod>2019-01-04T20:50:21+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/deflate/</loc>
+    <lastmod>2019-01-04T20:55:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./1-intro/what_is_zlib/</loc>
+    <lastmod>2019-01-04T20:50:21+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/lz77/</loc>
+    <lastmod>2019-01-04T20:55:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/lz77/sliding_window/</loc>
+    <lastmod>2019-01-04T20:55:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/lz77/length_distance_pair/</loc>
+    <lastmod>2019-01-04T20:55:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./2-algorithm/huffman/</loc>
+    <lastmod>2019-01-04T20:55:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/compression_levels/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/sliding_window/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/finding_longest_match/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/finding_longest_match/match_length_limit/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/finding_longest_match/rabin_karp_algorithm/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/finding_longest_match/hash_chain/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/finding_longest_match/adaptive_search_limit/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/huffman/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/io_buffer/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/io_buffer/input_buffer/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/io_buffer/literal_buffer/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/io_buffer/output_buffer/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./3-implement/misc/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/intel_zlib_new/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/ibm_zlib/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/facebook_zstd/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/google_zopfli/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/apple_lzfse/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/cloudflare_zlib/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./4-optimize/cloudflare_preset/</loc>
+    <lastmod>2019-01-04T20:52:57+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./5-reference/</loc>
+    <lastmod>2019-01-05T16:29:03+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./6-about/</loc>
+    <lastmod>2019-01-05T16:29:03+07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>./categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>./tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>./</loc>
+    <lastmod>2019-01-04T20:50:21+07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

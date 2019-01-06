@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>2. Compression Algorithm on Understanding zlib</title>
+    <link>./2-algorithm/</link>
+    <description>Recent content in 2. Compression Algorithm on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:52:57 +0700</lastBuildDate>
+    
+	<atom:link href="./2-algorithm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>2.3. Huffman Encoding</title>
+      <link>./2-algorithm/huffman/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/huffman/</guid>
+      <description>Huffman encoding is a statistical compression method. It encodes data symbols (such as characters) with variable-length codes, and lengths of the codes are based on the frequencies of corresponding symbols.
+Huffman encoding, as well as other variable-length coding methods, has two properties:
+ Codes for more frequently occurring data symbols are shorter than codes for less frequently occurring data symbols. Each code can be uniquely decoded. This requires the codes to be prefix codes, meaning any code for one symbol is not a prefix of codes for other symbols.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,17 @@
+baseURL = "./"
+languageCode = "en-us"
+
+title = "Understanding zlib"
+theme = "kraiklyn"
+
+pygmentsCodeFences = true
+pygmentsStyle = "monokailight"
+
+[params]
+sidebarColor = "default"
+customCss = []
+
+[[menu.shortcuts]]
+name = "Made By Euccas"
+url = "https://euccas.me"
+weight = 15

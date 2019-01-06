@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>3.5. I/O Buffer on Understanding zlib</title>
+    <link>./3-implement/io_buffer/</link>
+    <description>Recent content in 3.5. I/O Buffer on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:52:57 +0700</lastBuildDate>
+    
+	<atom:link href="./3-implement/io_buffer/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>3.5.1. Input Buffer</title>
+      <link>./3-implement/io_buffer/input_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/input_buffer/</guid>
+      <description>Before starting compression, zlib accumulates data in an input buffer and starts compression when the input buffer is full. Default input buffer size is 8KB.
+The reason of having the input buffer is that zlib won’t generate any output data until 16K data symbols have been generated in the literal buffer (default size of the literal buffer is 16K, see the next section for details about the literal buffer). Therefore starting compression with very short length of data has no benefit.</description>
+    </item>
+    
+    <item>
+      <title>3.5.2. Literal Buffer</title>
+      <link>./3-implement/io_buffer/literal_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/literal_buffer/</guid>
+      <description>The literal buffer stores data symbols encoded by LZ77. A symbol is either a single byte, coded as a literal, or a length-distance pair, which codes a copy of up to 258 bytes somewhere in the preceding 32K of uncompressed data. Default literal buffer size is 16K, so it can accumulate from 16K to as much as 4MB of uncompressed data (for highly compressible data).
+Once the literal buffer is full, zlib decides what kind of block to construct for Huffman encoding, and then does so, creating the header, which for a dynamic block describes the Huffman codes in the block, and then creates the coded symbols for that block.</description>
+    </item>
+    
+    <item>
+      <title>3.5.3. Output Buffer</title>
+      <link>./3-implement/io_buffer/output_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/output_buffer/</guid>
+      <description>For outputting the compressed data, zlib uses two buffers: a pending buffer, and an output buffer. The data flow is as shown in the following figure:
+Upon initialization, zlib creates a pending buffer (default size is 36K), and an output buffer (default size is 8K). The output data are first accumulated in pending buffer, and then get copied to output buffer, finally be written to the output compressed zip or gz files.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Understanding zlib</title>
+    <link>./</link>
+    <description>Recent content on Understanding zlib</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 04 Jan 2019 20:50:21 +0700</lastBuildDate>
+    
+	<atom:link href="./index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>1.1. What is zlib</title>
+      <link>./1-intro/what_is_zlib/</link>
+      <pubDate>Fri, 04 Jan 2019 20:50:21 +0700</pubDate>
+      
+      <guid>./1-intro/what_is_zlib/</guid>
+      <description>zlib is a free, open source software library for lossless data compression and decompression. It was written by Jean-loup Gailly (compression) and Mark Adler (decompression), in C language. The first version of zlib was released in May 1995. Jean-loup Gailly and Mark Adler also wrote the code for gzip (GNU zip). Under the hood, gzip uses zlib library.
+To date, zlib is mainly maintained by Mark Adler, and its recent updates and version releases can all be found on GitHub.</description>
+    </item>
+    
+    <item>
+      <title>2.2.1. Sliding Window</title>
+      <link>./2-algorithm/lz77/sliding_window/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/lz77/sliding_window/</guid>
+      <description>The sliding window is used to examine the input data sequence, and to maintain the historical data that serve as the dictionary. In other words, the dictionary is a portion of the previously appeared and encoded data.
+The sliding window consists of two parts: a search buffer, and a look-ahead buffer. The search buffer contains the dictionary - the recent encoded data, and the look-ahead buffer contains the next portion of input data sequence to be encoded.</description>
+    </item>
+    
+    <item>
+      <title>2.2.2. Length-Distance pair</title>
+      <link>./2-algorithm/lz77/length_distance_pair/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/lz77/length_distance_pair/</guid>
+      <description>The length-distance pair indicates that each of the next length characters is the same as the character exactly distance characters behind it in the original data stream.
+In LZ77 algorithm, the compressor searches back through the search buffer until it finds a match to the first character in the look-ahead buffer. There could be more than one matches exist in the search buffer, and the compressor will find the one match having the longest length.</description>
+    </item>
+    
+    <item>
+      <title>2.3. Huffman Encoding</title>
+      <link>./2-algorithm/huffman/</link>
+      <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
+      
+      <guid>./2-algorithm/huffman/</guid>
+      <description>Huffman encoding is a statistical compression method. It encodes data symbols (such as characters) with variable-length codes, and lengths of the codes are based on the frequencies of corresponding symbols.
+Huffman encoding, as well as other variable-length coding methods, has two properties:
+ Codes for more frequently occurring data symbols are shorter than codes for less frequently occurring data symbols. Each code can be uniquely decoded. This requires the codes to be prefix codes, meaning any code for one symbol is not a prefix of codes for other symbols.</description>
+    </item>
+    
+    <item>
+      <title>3.3.1. Match Length Limit</title>
+      <link>./3-implement/finding_longest_match/match_length_limit/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/match_length_limit/</guid>
+      <description>zlib defines a MIN_MATCH and a MAX_MATCH as the minimum and maximum match lengths it searches for.
+1#define MIN_MATCH 3 2#define MAX_MATCH 258 The MIN_MATCH is set to 3. The reason of having a minimum match length equals to 3 is obvious: the matches shorter than 3 will not help reduce the encoded data size, because the encoded data symbols will have the same or longer length.
+This value of MIN_MATCH cannot be changed unless you change related code, such as calling UPDATE_HASH function for how many times.</description>
+    </item>
+    
+    <item>
+      <title>3.3.2. Rabin-Karp Algorithm</title>
+      <link>./3-implement/finding_longest_match/rabin_karp_algorithm/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/rabin_karp_algorithm/</guid>
+      <description>Rabin-Karp algorithm is a string-searching algorithm created by Richard M. Karp and Michael O. Rabin. It uses hashing to find any one of a set of pattern strings in a text. For example, given a text &amp;ldquo;AABAACAADAABAABA&amp;rdquo;, and a pattern &amp;ldquo;AABA&amp;rdquo;, we can use Rabin-Karp algorithm to find pattern exists in the text at index 0, 9, 12.
+Following pseudo code describes how Rabin-Karp algorithm works.
+1# p is a pattern, its length is m 2# t is text, its length is n 3# the algorithm searches for pattern p in text t 4 5Compute hash_p (for pattern p) 6Compute hash_t (for the first substring of t with m length) 7for i = 0 to n - m: 8 if hash_p == hash_t: 9 Match t[i .</description>
+    </item>
+    
+    <item>
+      <title>3.3.3. Hash Chain</title>
+      <link>./3-implement/finding_longest_match/hash_chain/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/hash_chain/</guid>
+      <description>As explained earlier, Rabin-Karp algorithm checks the hash value of substrings in order to find matches in text. To find matches in the search buffer which stores recent data symbols, zlib uses a hash chain organization to keep records of the hash values of every 3 (or other values defined by MIN_MATCH) bytes.
+This hash chain in zlib is implemented by using two arrays: prev[] and head[]. Both arrays stores the positions in the sliding window.</description>
+    </item>
+    
+    <item>
+      <title>3.3.4. Adaptive Search Limit</title>
+      <link>./3-implement/finding_longest_match/adaptive_search_limit/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/finding_longest_match/adaptive_search_limit/</guid>
+      <description>When searching for the longest match in the hash chain, zlib limits the chain length it searches to improve searching efficiency. The search limit is set by:
+ The predefined max_chain_length value. This value is different for different compression levels. In the searching process, if a match has been found and its length is not less than a predefined good_match length, the search length will be shortened as new_search_chain_length = search_chain_length / 4  The search limit values are defined in a configuration table:</description>
+    </item>
+    
+    <item>
+      <title>3.5.1. Input Buffer</title>
+      <link>./3-implement/io_buffer/input_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/input_buffer/</guid>
+      <description>Before starting compression, zlib accumulates data in an input buffer and starts compression when the input buffer is full. Default input buffer size is 8KB.
+The reason of having the input buffer is that zlib won’t generate any output data until 16K data symbols have been generated in the literal buffer (default size of the literal buffer is 16K, see the next section for details about the literal buffer). Therefore starting compression with very short length of data has no benefit.</description>
+    </item>
+    
+    <item>
+      <title>3.5.2. Literal Buffer</title>
+      <link>./3-implement/io_buffer/literal_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/literal_buffer/</guid>
+      <description>The literal buffer stores data symbols encoded by LZ77. A symbol is either a single byte, coded as a literal, or a length-distance pair, which codes a copy of up to 258 bytes somewhere in the preceding 32K of uncompressed data. Default literal buffer size is 16K, so it can accumulate from 16K to as much as 4MB of uncompressed data (for highly compressible data).
+Once the literal buffer is full, zlib decides what kind of block to construct for Huffman encoding, and then does so, creating the header, which for a dynamic block describes the Huffman codes in the block, and then creates the coded symbols for that block.</description>
+    </item>
+    
+    <item>
+      <title>3.5.3. Output Buffer</title>
+      <link>./3-implement/io_buffer/output_buffer/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/io_buffer/output_buffer/</guid>
+      <description>For outputting the compressed data, zlib uses two buffers: a pending buffer, and an output buffer. The data flow is as shown in the following figure:
+Upon initialization, zlib creates a pending buffer (default size is 36K), and an output buffer (default size is 8K). The output data are first accumulated in pending buffer, and then get copied to output buffer, finally be written to the output compressed zip or gz files.</description>
+    </item>
+    
+    <item>
+      <title>3.6. Misc.</title>
+      <link>./3-implement/misc/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./3-implement/misc/</guid>
+      <description>This section is empty and waiting for my future updates.
+ </description>
+    </item>
+    
+    <item>
+      <title>4.1. Intel: zlib-new</title>
+      <link>./4-optimize/intel_zlib_new/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/intel_zlib_new/</guid>
+      <description>Reference: Intel: High Performance ZLIB compression on Intel Architecture Processors (pdf)
+Optimizations focus on improved hashing, the search for the longest prefix match of substrings in LZ77 process, and the Huffman code flow.
+Improved hashing: For compression levels 1 through 5, hash elements as quadruplets (match at least 4 bytes). For compression levels 6 to 9, use zlib&amp;rsquo;s original hashing elements as triplets (match at least 3 bytes).
+Add two additional strategies: DEFLATE_quick for level 1, DEFLATE_medium for level 4 to 6.</description>
+    </item>
+    
+    <item>
+      <title>4.2. IBM: fast deflate</title>
+      <link>./4-optimize/ibm_zlib/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/ibm_zlib/</guid>
+      <description>Reference: IBM: A fast implementation of Deflate
+Optimizations focus on improving the speed of zlib deflate process by using LZ4&amp;rsquo;s repetition elimination process, and improved Huffman coding process.
+Replace LZ77 with LZ4 for faster repetition elimination: Observed speed-up is moderate, didn&amp;rsquo;t achieve LZ4&amp;rsquo;s performance probably due to differences in cache usage. Also observed compression ratio is hardly affected.
+Force the use of static Huffman tree: Reached fast speed but could have negative effect on compression ratio.</description>
+    </item>
+    
+    <item>
+      <title>4.3. Facebook: Zstandard</title>
+      <link>./4-optimize/facebook_zstd/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/facebook_zstd/</guid>
+      <description>Reference: Facebook Zstandard (zstd) design introduction
+Zstandard on GitHub
+Zstandard is designed to scale with modern hardware and compress smaller and faster, for general-purpose compression for a variety of data types.
+Improve upon zlib by combining several recent innovations and targeting modern hardware.
+Increase window size to 1MB - 8MB (recommendation).
+In compression, use Finite State Entropy based on ANS (Asymmetric Numeral System) to improve performance and reduce latency.
+Use repcode modeling to efficiently compress structured data</description>
+    </item>
+    
+    <item>
+      <title>4.4. Google: Zopfli, Brotli</title>
+      <link>./4-optimize/google_zopfli/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/google_zopfli/</guid>
+      <description>Reference: Data compression using Zopfli (pdf), Comparison of Brotli, Deflate, Zopfli, LZMA, LZHAM and Bzip2 Compression Algorithms (pdf)
+Zopfli on GitHub
+Brotli on GitHub
+In 2013 Google launched Zopfli, which is compatible with deflate format. Zopfli gives smaller compressed data size than gzip (3.7-8.3% smaller), but it has slower compression speed than gzip level 9. Zopfli library can only compress, not decompress.
+Brotli attempts to implement a new compression format, and a more efficient algorithm than deflate.</description>
+    </item>
+    
+    <item>
+      <title>4.5. Apple: LZFSE</title>
+      <link>./4-optimize/apple_lzfse/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/apple_lzfse/</guid>
+      <description>Reference: Apple Data Compression: LZFSE
+LZFSE is designed for iOS and macOS, to achieve much higher energy efficiency and speed (between 2x and 3x).
+LZFSE algorithm uses LZ77 and Finite State Entropy encoding.</description>
+    </item>
+    
+    <item>
+      <title>4.6. CloudFlare: zlib</title>
+      <link>./4-optimize/cloudflare_zlib/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/cloudflare_zlib/</guid>
+      <description>Reference: CloudFlare fights cancer: The Unexpected Benefit Of Open Sourcing Our Code
+CloudFlare zlib fork on GitHub
+CloudFlare&amp;rsquo;s improvements on zlib include:
+ Use uint64_t to replace the 16-bit types. Use an improved hash function iSCSI CRC32. This function is implemented as a hardware instruction on Intel processors. It has very fast performance and better collision properties. Search for matches of at least 4 bytes. Use SIMD instructions for window rolling.</description>
+    </item>
+    
+    <item>
+      <title>4.7. CloudFlare: preset dictionary</title>
+      <link>./4-optimize/cloudflare_preset/</link>
+      <pubDate>Fri, 04 Jan 2019 20:52:57 +0700</pubDate>
+      
+      <guid>./4-optimize/cloudflare_preset/</guid>
+      <description>Reference: CloudFlare: improve compression with preset deflate dictionary
+Optimizations aim to improve compression performance (~25% down) for HTML files (mostly short texts).
+Change minimal match length to 4 bytes.
+Use a preset dictionary so at the beginning of the input has back reference for searching matches.
+ Create the preset dictionary by performing pseudo LZ77 over a set of files to be compressed, and find strings that DEFLATE would not compress in the first 16Kb of each input file.</description>
+    </item>
+    
+  </channel>
+</rss>
