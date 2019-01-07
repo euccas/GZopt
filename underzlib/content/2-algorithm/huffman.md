@@ -5,7 +5,7 @@ anchor: "deflate_huffman"
 weight: 40
 ---
 
-Huffman encoding is a statistical compression method. It encodes data symbols (such as characters) with variable-length codes, and lengths of the codes are based on the frequencies of corresponding symbols. 
+Huffman encoding is a statistical compression method. It encodes data symbols (such as characters) with <bold>variable-length codes</bold>, and lengths of the codes are based on the frequencies of corresponding symbols. 
 
 Huffman encoding, as well as other variable-length coding methods, has two properties:
 

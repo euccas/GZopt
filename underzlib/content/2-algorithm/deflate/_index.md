@@ -10,4 +10,4 @@ Deflate method was originally defined by [Phil Katz](https://en.wikipedia.org/wi
 The following figure illustrates the deflate and inflate process from a high level.
 
 
-![Deflate Process](/deflate_process.png)
+![Deflate Process](./deflate_process.png)

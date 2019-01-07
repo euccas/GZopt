@@ -9,7 +9,7 @@ As explained earlier, Rabin-Karp algorithm checks the hash value of substrings i
 
 This hash chain in zlib is implemented by using two arrays: <code>prev[]</code> and <code>head[]</code>. Both arrays stores the positions in the sliding window. The <code>head[]</code> array stores the heads of the hash chains, the <code>prev[]</code> array stores and links the positions of strings with the same hash index. The following figure shows an example of how the hash chain works.
 
-![Hash Chain](/hash_chain.png)
+![Hash Chain](./hash_chain.png)
 
 {{% block note %}}
 In this example, the <code>HashValue</code> function and its results are just examples, and they are not accurate.

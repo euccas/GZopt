@@ -7,7 +7,7 @@ weight: 103
 
 For outputting the compressed data, zlib uses two buffers: a <bold>pending buffer</bold>, and an <bold>output buffer</bold>. The data flow is as shown in the following figure:
 
-![Output Buffer](/output_buffer.png)
+![Output Buffer](./output_buffer.png)
 
 Upon initialization, zlib creates a pending buffer (default size is 36K), and an output buffer (default size is 8K). The output data are first <bold>accumulated in pending buffer</bold>, and then get <bold>copied to output buffer</bold>, finally be written to the output compressed zip or gz files.
 

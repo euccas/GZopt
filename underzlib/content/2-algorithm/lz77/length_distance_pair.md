@@ -1,5 +1,5 @@
 ---
-title: "2.2.2. Length-Distance pair"
+title: "2.2.2. Length-Distance Pair"
 date: 2019-01-04T20:55:57+07:00
 anchor: "deflate_length_distance_pair"
 weight: 32
@@ -17,6 +17,6 @@ The reason of adding the third element *C* in the triple is for handling the cas
 
 The following figure shows an example of how LZ77 finds a longest match and encodes the repeated characters for a given string <code>"axrrmaxrbaxssr"</code>.
 
-![Length Distance Pair](/length_distance_pair.png)
+![Length Distance Pair](./length_distance_pair.png)
 
 In practice, a compressor can optimize the encoding output according to its own implementation, and choose output formats other than the <bold>(D, L, C)</bold> triplet. 

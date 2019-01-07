@@ -32,7 +32,7 @@ The sliding window consists of two parts: a search buffer, and a look-ahead buff
     </item>
     
     <item>
-      <title>2.2.2. Length-Distance pair</title>
+      <title>2.2.2. Length-Distance Pair</title>
       <link>./2-algorithm/lz77/length_distance_pair/</link>
       <pubDate>Fri, 04 Jan 2019 20:55:57 +0700</pubDate>
       
